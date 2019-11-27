@@ -1,18 +1,8 @@
-FROM mhart/alpine-node:10
+from orenoid/hexo:base
 
-RUN echo https://mirrors.aliyun.com/alpine/v3.8/main > /etc/apk/repositories; \
-    echo https://mirrors.aliyun.com/alpine/v3.8/community >> /etc/apk/repositories
+RUN rm -rf /hexo/_config.yml /hexo/themes/next/_config.yml /hexo/source
 
-RUN \
-    apk --update --no-progress add git openssh
-
-WORKDIR /hexo
-
-VOLUME ["/hexo"]
-
-EXPOSE 4000
-
-RUN \
-    npm --registry https://registry.npm.taobao.org install hexo-cli@3.1.0 hexo-generator-feed@2.1.1 hexo-generator-searchdb@1.2.0 -g --save
+VOLUME ["/hexo/_config.yml", "/hexo/themes/next/_config.yml", "/hexo/source", \
+    "/hexo/themes/next/source/images/avatar.png", "/hexo/themes/next/source/images/favicon.ico", "/root/.ssh"]
 
 CMD ["sh"]

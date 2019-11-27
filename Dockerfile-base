@@ -1,0 +1,21 @@
+FROM mhart/alpine-node:10
+
+RUN echo https://mirrors.aliyun.com/alpine/v3.8/main > /etc/apk/repositories; \
+    echo https://mirrors.aliyun.com/alpine/v3.8/community >> /etc/apk/repositories
+
+RUN \
+    apk --update --no-progress add git openssh
+
+WORKDIR /hexo
+
+EXPOSE 4000
+
+# RUN \
+#     npm --registry https://registry.npm.taobao.org install hexo-cli@3.1.0 -g \
+#     && hexo init . \
+#     && npm --registry https://registry.npm.taobao.org install \
+#     && npm --registry https://registry.npm.taobao.org install hexo-generator-feed@2.1.1 hexo-generator-searchdb@1.2.0 hexo-deployer-git@2.1.0 --save
+
+# RUN git clone https://github.com/theme-next/hexo-theme-next themes/next || echo 'Failed to download theme.\n'
+
+CMD ["sh"]
