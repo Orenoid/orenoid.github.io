@@ -1,4 +1,6 @@
-备忘指南
+## 备忘指南
+
+> 流程以及相关文件都是针对我个人博客定制的，不具有普适性
 
 拉取src分支
 
@@ -8,18 +10,18 @@ git clone --single-branch --branch src git@github.com:Orenoid/orenoid.github.io.
 
 考虑到国内网络环境的不稳定性，把整个依赖环境打包到 `orenoid/hexo:latest` 镜像里了
 
-所以直接执行 `run.bat` 即可，跑起来后自动进入docker容器（linux环境下自行调整脚本语法）
+可选择直接使用docker hub现成镜像，Windows环境下直接执行 `run.bat`（**记得修改ssh挂载路径**）
 
-生成静态资源
+或重新构建：
 
-```
-hexo g
-```
-
-本地预览
-
-```
-hexo s
+```shell
+docker build -t orenoid/hexo:latest
 ```
 
-其他hexo命令也一样进到容器里执行
+跑起来后进docker容器执行hexo相关命令
+
+生成静态资源：`hexo g`
+
+本地预览：`hexo s`
+
+部署：`hexo clean && hexo d`
