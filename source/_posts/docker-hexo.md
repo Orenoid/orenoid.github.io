@@ -1,10 +1,10 @@
 ---
-title: 博客Docker化实践
+title: Hexo博客Docker化实践
 s: docker-hexo
 date: 2019-10-15 02:08:57
 categories:
 - 技术
-tags: [hexo,Docker]
+tags: [Hexo,Docker]
 ---
 
 前段时间学习了Docker的基本使用之后，决定借助Docker来解决麻烦的博客迁移问题。
