@@ -21,6 +21,8 @@ git clone --single-branch --branch src git@github.com:Orenoid/orenoid.github.io.
 
 新建文章：`hexo new -s 文件名 文章标题`
 
+将草稿发布为文章：`hexo publish post <file_name>`
+
 部署：`hexo clean && hexo d`
 
 ---------------------------------------
