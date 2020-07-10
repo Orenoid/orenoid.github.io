@@ -1,7 +1,7 @@
 ---
 title: 浅谈Python函数、方法与描述符
 s: python-descriptor
-date: 2019-11-20 09:01:46
+date: 2020-03-20 09:01:46
 categories: 
 - 技术
 tags: [Python]

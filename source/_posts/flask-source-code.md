@@ -1,9 +1,12 @@
 ---
 title: Flask源码阅读笔记
 s: flask_source_code
-date: 2020-03-23 03:07:05
-tags:
+date: 2019-11-23 03:07:05
+categories:
+- 技术
+tags: [Python,Flask]
 ---
+
 
 
 Flask和Django都是基于wsgi协议去实现的Python Web框架。本文将从与开发者相关度最高的地方入手：请求处理。
@@ -22,7 +25,7 @@ def demo_app(environ,start_response):
     start_response("200 OK", [('Content-Type','text/plain; charset=utf-8')])
     return [stdout.getvalue().encode("utf-8")]
 ```
-
+<!--more-->
 当服务器收到请求时，就会去调用框架提供的callable对象，解析HTTP请求，构造environ字典，和start_response函数一并传入。而在flask中，这个callable对象就是由Flask类构造而来的，它的`__call__`方法是这样的：
 
 ```python
@@ -74,9 +77,7 @@ app.wsgi_app = MyMiddleware(app.wsgi_app)
 
 实际上Flask在早期版本中，只有请求上下文的概念。但后来开发者发现，在有些场景下我们并没有构造请求的必要性，但是需要用到应用的一些内部资源或配置、参数（例如数据库连接），如果仅仅是为了获取应用上下文而强行构建一个请求上下文的话，这种方案又过于不合理，于是flask后来将这两类上下文区分开来了。
 
-
-
-继续看`full_dispatch_request`方法：
+说完上下文机制，我们继续回来看上面的`wsgi_app`方法，上下文入栈之后，flask会调用`full_dispatch_request`方法来生成响应数据：
 
 ```python
     def full_dispatch_request(self):
