@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="Orenoid's Blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"always","offset":12,"onmobile":true},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="最近从Python转到了Java，写了一个多月，帮公司写了一个项目，谈谈感想。">
+<meta name="keywords" content="Python,Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从Python转向Java的一些感想">
+<meta property="og:url" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;2019&#x2F;09&#x2F;28&#x2F;python2java&#x2F;index.html">
+<meta property="og:site_name" content="Orenoid&#39;s Blog">
+<meta property="og:description" content="最近从Python转到了Java，写了一个多月，帮公司写了一个项目，谈谈感想。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-11T02:11:01.628Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://blog.orenoid.com/2019/09/28/python2java/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>从Python转向Java的一些感想 | Orenoid's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Orenoid's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.orenoid.com/2019/09/28/python2java/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Orenoid">
+      <meta itemprop="description" content="A lot to learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Orenoid's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从Python转向Java的一些感想
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-28 01:42:45" itemprop="dateCreated datePublished" datetime="2019-09-28T01:42:45+00:00">2019-09-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近从Python转到了Java，写了一个多月，帮公司写了一个项目，谈谈感想。</p>
+<a id="more"></a>
+<p>主要分两方面，一个是Java本身，一个是spring全家桶。</p>
+<p>首先谈谈从python切换到Java的一些感受。<br>这两门语言都是面向对象的，Java基础很快就上手了，学起来并不会觉得很困难，一开始也没觉得有什么很大的差异。到实际开始写项目的时候，差异就体现出来了，感受最明显的果然还是静态类型和动态类型的差别。</p>
+<p>这里得先声明一点，我知道python也有一些类型检查的工具，大公司可能也有相应的规范，但至少我所在的公司没有，所以我也不知道这些工具能起到多大的作用。本文也只是以我个人的开发经验做的一些总结，并不是以踩python为目的。</p>
+<p>我们知道函数是代码中非常重要的单元，理想的代码在高层次的逻辑中应当是以函数作为组织单位，同一个函数中应当只有一个抽象层级的逻辑。低层次的逻辑封装在更底层的函数内部，调用者只需要传参和获取结果，不需要关注具体实现细节。<br>而python的动态语言性质，会很容易诱导新手（比如我）写出破坏这种低耦合特性的代码。<br>一方面是类型的不确定性，不论参数还是结果，都有可能传个八竿子打不着关系的对象过来。这一点在python推出typing后稍微有所改善，但也只是起到提示作用，并没有约束效果。<br>如果接口处理的都是些基本类型或者封装好的类型还好，更要命的是，如果函数接收的是个字典、元组之类的，然后字典里嵌套了各种结构（就像我们Web API返回的复杂结构的JSON那样），或者元组里包含了不同类型的变量，然后用下标去取，这种情况下的代码可维护性基本为0了，鬼知道你会传个什么结构进来。事实上，我也确实在几个同事的项目里看过这种代码了，一个多层嵌套结构的字典或者数组，在几个函数内传了三四层，边传边改，而且变量名还一直变，到里头早就忘了这是个啥了（神奇的是其中一位同事以前还写过一两年的Java），幸好项目不大，如果是个大项目，不敢想象维护起来会是什么后果。</p>
+<p>并且这种情况下，函数内外部都只能靠约定和信任来传参和接收结果，这样的话还谈何低耦合呢？不要拆分出一个函数可能还好点。我不知道有多少新手会犯这种错误，但是语言层面缺乏限制，又没有好的团队规范的情况下，必然会导致这种低可读性代码出现的可能性相对高很多，有了类型约束可以较为有效的减少这种情况发生的几率（但架不住有些人代码烂，静态语言也能给你写得跟动态的一样）</p>
+<p>接着说说静态类型带来的麻烦，这个麻烦主要集中在无类型到有类型的转换上，具体场景通常为各种IO数据的处理，比如json，或者从数据库拿到的数据列表，这些用于传输的数据格式都是天生动态的。要在Java中使用，必然得想办法转化成有类型的，比如处理成POJO等等，通常会需要相应的数据解析工具（但是无论用什么工具，这个转换过程本质上都是基于传输双方的约定去进行的）。而在编写业务过程中，还需要用到不同框架与库来进行网络通信，每次需要处理序列化/反序列化的时候，都要去翻找对应框架的API，有些要配合Spring来使用还需要进行一堆繁琐的配置，相当麻烦。当然这方面主要还是Java这边的框架我不熟悉，写多了应该还是能克服的，不过相比动态类型要耗费更多时间是肯定的。</p>
+<p>说完类型约束，在讨论spring全家桶之前，先说说我这两天接手一个离职同事的（Java Web）项目的经历。我上面一直在说静态类型的好处，结果把我同事的代码拉下来一看，看得我脑壳疼。好好一个Java，写得跟动态语言一样，满天飞的Object和Map。除此之外，到处是缺乏语义的命名，一堆list、entity、temp、map、xx1、xx2这种看不出是什么的名字，看几行就得回去确认下这个变量指代的是什么。而且不同抽象层级的代码也混在一起，业务层和表现层不分开来，写了一大段你以为他在处理什么复杂逻辑，其实他就是在拼装JSON。也算是另一种意义上的“事在人为”了。<br>后来我又回顾了自己的一些项目，虽然没他那么糟糕（真的没有），但类似的错误我代码里好像也有一些,但是自己写的时候并没有注意到这些问题。<br>由此我又得出另一个初步的结论，稍微读点别人的烂代码对提升自己代码质量还是有一定帮助的。如果光看自己代码，所有逻辑是自己写的，自然不会觉得难懂，也就很容易忽视很多缺陷。所以想要保证团队项目的代码质量与可维护性的话，我觉得Code Review应该是很有必要的。</p>
+<p>好了，回头说说spring全家桶。这东西一开始真的把我搞得一脸懵逼（现在依旧懵逼）。<br>后来直接从spring boot上手，啃了好几天官方的文档，包括spring，springmvc，spring data这些，都简单过了一遍，才大致弄明白一些概念。随后又看了不少demo和开源项目，才磕磕碰碰地把之前一个python小项目用Java重新实现了一遍。<br>老实说，我还是没太明白spring这个IOC到底起到了什么实质作用，我知道是控制反转/依赖注入，把对象的生命周期和控制权交给spring来处理，我们负责接收就行了。但是我并没有直接感受到这样跟自己new一个会有多大的差别，带来了什么好处，是性能上的？还是扩展性上的？不知道，学的很浅，惭愧。</p>
+<p>在项目开发过程中，接触到了分层架构的思想。这个要说是从spring学到的好像又不是很严谨，毕竟架构和设计模式这些东西是不局限于语言的。但比较奇怪的是我在写python web的时候，很少看到别人python项目也很少看到有按这个去设计的，而后来看过的Java项目代码，或多或少都是按这个结构来的。不过虽说大多数Java web项目都按照三层架构来设计的，但就像上面我提到的，同事项目的表现层和业务层逻辑界限模糊不清，比如在业务层拼装json等等。所以这东西还是看人。<br>总之，不管是不是从spring上学到的，但至少是我在这段时间写Java吸收到的一个设计思路。并且也可以应用到python web这边，让项目结构清晰很多。重新看了自己过去写的一些项目，发现很多地方也没做好逻辑的划分，便重新调整了代码布局，定制了一些规范，之后在网上搜索时看到<a href="https://zhuanlan.zhihu.com/p/28717374" target="_blank" rel="noopener">这篇文章</a>，发现里头很多规范和我做法几乎是一致的，可见我的思路多半是没有问题的。</p>
+<p>以上就是我在过去一个多月以来，从python转到Java的一些感想和收获了，才疏学浅，若有不对的地方，欢迎指正。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+              <a href="/tags/Java/" rel="tag"># Java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/08/07/decorator-unittest/" rel="next" title="Python装饰器与单元测试">
+                  <i class="fa fa-chevron-left"></i> Python装饰器与单元测试
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2019/10/15/docker-hexo/" rel="prev" title="Hexo博客Docker化实践">
+                  Hexo博客Docker化实践 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="Orenoid"
+    src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Orenoid</p>
+  <div class="site-description" itemprop="description">A lot to learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="http://steamcommunity.com/profiles/76561198162257296/" title="Steam &amp;rarr; http:&#x2F;&#x2F;steamcommunity.com&#x2F;profiles&#x2F;76561198162257296&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-steam"></i>Steam</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/Orenoid" title="https:&#x2F;&#x2F;github.com&#x2F;Orenoid" rel="noopener" target="_blank">GitHub</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://weibo.com/5000490293/profile?is_all=1" title="http:&#x2F;&#x2F;weibo.com&#x2F;5000490293&#x2F;profile?is_all=1" rel="noopener" target="_blank">Weibo</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://myanimelist.net/profile/Orenoid" title="https:&#x2F;&#x2F;myanimelist.net&#x2F;profile&#x2F;Orenoid" rel="noopener" target="_blank">MAL</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Orenoid</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

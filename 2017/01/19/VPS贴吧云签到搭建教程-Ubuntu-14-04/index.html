@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="Orenoid's Blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"always","offset":12,"onmobile":true},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="之前在新浪云上也搭过一个云签到，因为懒的原因一直没想把它迁移到自己的服务器上，奈何新浪后来改了扣费标准，云豆的消耗翻了一番，所以这几天抽空在服务器上搭了一个，顺便升到了最新版。　　安装之前在网上搜了一下，发现云签到的相关教程基本上都是基于各种PaaS平台,基于VPS搭建的屈指可数，找到的也不够详细。所以搭建完成以后决定写下整个流程，一方面是供别人参考，一方面是做个记录，以及给自己博客填充点东西">
+<meta name="keywords" content="Ubuntu,云签到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VPS贴吧云签到搭建教程 基于Ubuntu 14.04">
+<meta property="og:url" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;2017&#x2F;01&#x2F;19&#x2F;VPS%E8%B4%B4%E5%90%A7%E4%BA%91%E7%AD%BE%E5%88%B0%E6%90%AD%E5%BB%BA%E6%95%99%E7%A8%8B-Ubuntu-14-04&#x2F;index.html">
+<meta property="og:site_name" content="Orenoid&#39;s Blog">
+<meta property="og:description" content="之前在新浪云上也搭过一个云签到，因为懒的原因一直没想把它迁移到自己的服务器上，奈何新浪后来改了扣费标准，云豆的消耗翻了一番，所以这几天抽空在服务器上搭了一个，顺便升到了最新版。　　安装之前在网上搜了一下，发现云签到的相关教程基本上都是基于各种PaaS平台,基于VPS搭建的屈指可数，找到的也不够详细。所以搭建完成以后决定写下整个流程，一方面是供别人参考，一方面是做个记录，以及给自己博客填充点东西">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;15.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;1.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;dn-chinmax.qbox.me&#x2F;wp-content&#x2F;uploads&#x2F;2015&#x2F;10&#x2F;tiebayunqiandaoconf.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;9.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;10.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;11.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;12.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;13.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;14.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;dn-chinmax.qbox.me&#x2F;wp-content&#x2F;uploads&#x2F;2015&#x2F;10&#x2F;tiebayunqiandaoguide6.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;2.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;3.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;4.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;5.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;6.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;7.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;8.png">
+<meta property="og:updated_time" content="2020-04-11T02:11:01.624Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;15.png">
+
+<link rel="canonical" href="https://blog.orenoid.com/2017/01/19/VPS%E8%B4%B4%E5%90%A7%E4%BA%91%E7%AD%BE%E5%88%B0%E6%90%AD%E5%BB%BA%E6%95%99%E7%A8%8B-Ubuntu-14-04/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>VPS贴吧云签到搭建教程 基于Ubuntu 14.04 | Orenoid's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Orenoid's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.orenoid.com/2017/01/19/VPS%E8%B4%B4%E5%90%A7%E4%BA%91%E7%AD%BE%E5%88%B0%E6%90%AD%E5%BB%BA%E6%95%99%E7%A8%8B-Ubuntu-14-04/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Orenoid">
+      <meta itemprop="description" content="A lot to learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Orenoid's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          VPS贴吧云签到搭建教程 基于Ubuntu 14.04
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-19 09:24:38" itemprop="dateCreated datePublished" datetime="2017-01-19T09:24:38+00:00">2017-01-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="/img/15.png" alt=""><br>　　之前在新浪云上也搭过一个云签到，因为懒的原因一直没想把它迁移到自己的服务器上，奈何新浪后来改了扣费标准，云豆的消耗翻了一番，所以这几天抽空在服务器上搭了一个，顺便升到了最新版。<br>　　安装之前在网上搜了一下，发现云签到的相关教程基本上都是基于各种PaaS平台,基于VPS搭建的屈指可数，找到的也不够详细。所以搭建完成以后决定写下整个流程，一方面是供别人参考，一方面是做个记录，以及给自己博客填充点东西。。<br>　　开始之前先强调一下，本流程并不保证能完全正确，跟你的实际环境很可能会有出入，所以遇到问题请善用搜索。</p>
+<a id="more"></a>
+<h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><p>整个搭建流程需要具备以下这些东西：  </p>
+<ol>
+<li>VPS , Ubuntu系统  </li>
+<li>apache2 , php , mysql , phpmyadmin  </li>
+<li><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000" target="_blank" rel="noopener">Git 工具</a>  </li>
+<li><a href="https://github.com/MoeNetwork/Tieba-Cloud-Sign" target="_blank" rel="noopener">云签到源码</a>  </li>
+<li>基本的linux命令行操作知识</li>
+</ol>
+<p>附：这一部分是我在比较早之前就配置过的了，所以是直接参照当初用的教程写的。</p>
+<h2 id="安装apache2"><a href="#安装apache2" class="headerlink" title="安装apache2"></a>安装apache2</h2><p>在命令行输入：  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> apt-get install apache2</span><br></pre></td></tr></table></figure>
+<p>安装完成后运行如下命令重启一下：  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> service apache2 restart</span><br></pre></td></tr></table></figure>
+<p>在本地浏览器输入服务器IP（如果有域名就输入域名，下面同理），如果打开的是这样一个页面，显示”It works!”,那么就说明安装成功了。<br><img src="/img/1.png" alt=""><br>Apache2的默认文件目录是/var/www/html，浏览器所访问的初始文件index.html就在这里面。<br>附：Apache2本身的配置文件目录是 /etc/apache2  </p>
+<h2 id="安装php"><a href="#安装php" class="headerlink" title="安装php"></a>安装php</h2><p>命令行输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> apt-get install libapache2-mod-php5 php5</span><br></pre></td></tr></table></figure>
+<p>此外建议安装扩展 php5-gd php5-mysql 安装方式同上（这里出自原参考文档，我也不确定自己当时装了没）<br>安装完成后再重启下apache2:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> service apache2 restart</span><br></pre></td></tr></table></figure>
+<p>接下来我们在html目录下新建一个test.php文件来测试是否能正常运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> vi /var/www/html/test.php</span><br></pre></td></tr></table></figure>
+<p>然后输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php <span class="built_in">echo</span> <span class="string">"hello,world!"</span>?&gt;</span><br></pre></td></tr></table></figure>
+<p>保存退出后，在本地浏览器输入：服务器IP/test.php,若能显示hello,world字样，则证明安装成功了。  </p>
+<h2 id="安装MySQL数据库"><a href="#安装MySQL数据库" class="headerlink" title="安装MySQL数据库"></a>安装MySQL数据库</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> apt-get install mysql-server mysql-client</span><br></pre></td></tr></table></figure>
+<p>apt-get程序会自动下载安装最新的mysql版本。在安装的最后，它会要求里输入root的密码，注意，这里的root密码指的不是Ubuntu的root密码，是你要给MySQL设定的root密码。  </p>
+<h2 id="安装phpmyadmin-Mysql数据库管理"><a href="#安装phpmyadmin-Mysql数据库管理" class="headerlink" title="安装phpmyadmin-Mysql数据库管理"></a>安装phpmyadmin-Mysql数据库管理</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> apt-get install phpmyadmin</span><br></pre></td></tr></table></figure>
+<p>phpmyadmin设置：<br>在安装过程中会要求选择Web server：apache2或lighttpd，使用空格键选定apache2，按tab键然后确定。然后会要求输入设置的Mysql数据库密码连接密码Password of the database’s administrative user。<br>然后将phpmyadmin与apache2建立连接，以我的为例：www目录在/var/www/html，phpmyadmin在/usr/share/phpmyadmin目录，所以就用命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> ln -s /usr/share/phpmyadmin /var/www/html</span><br></pre></td></tr></table></figure>
+<p>phpmyadmin测试：在浏览器地址栏中打开:服务器IP/phpmyadmin，这里后面搭建的时候还要用到。</p>
+<h2 id="设置Ubuntu文件执行读写权限"><a href="#设置Ubuntu文件执行读写权限" class="headerlink" title="设置Ubuntu文件执行读写权限"></a>设置Ubuntu文件执行读写权限</h2><p>　　组建安装好之后，PHP网络服务器根目录默认设置是在：/var/www。由于Linux系统的安全性原则，改目录下的文件读写权限是只允许root用户操作的，所以我们不能在www文件夹中新建php文件，也不能修改和删除，必须要先修改/var/www目录的读写权限。在界面管理器中通过右键属性不能修改文件权限，得执行root终端命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> chmod 777 /var/www</span><br></pre></td></tr></table></figure>
+<p>然后就可以写入html或php文件了。777是linux中的最高权限，表示可读，可写，可执行。  </p>
+<h2 id="Git-安装"><a href="#Git-安装" class="headerlink" title="Git 安装"></a>Git 安装</h2><p>这个主要是为了能从GitHub上方便快捷的获取各种源码用的，如果你非要不装也不是不可以，能把源码下下来就行。<br>具体流程恕我不再详细说明了，内容较多，请自行查阅，<a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000" target="_blank" rel="noopener">廖老师的教程</a>已经足够详细了。</p>
+<p>至此，准备工作就算基本完成了。</p>
+<h1 id="云签到安装"><a href="#云签到安装" class="headerlink" title="云签到安装"></a>云签到安装</h1><p>接下来可以开始搭建工作了，首先我们要到GitHub上面获取站点源码。</p>
+<h2 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h2><p>通过Git命令可以很快速地下载到本地：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$git</span> <span class="built_in">clone</span> https://github.com/MoeNetwork/Tieba-Cloud-Sign.git</span><br></pre></td></tr></table></figure>
+<p>将代码放到 /var/www/html 目录下，记得将里面原来的index.html改名或删除。<br>注意：是将Tieba-Cloud-Sign里的文件放到该目录下，而不是Tieba-Cloud-Sign整个文件夹。</p>
+<h2 id="修改config-php"><a href="#修改config-php" class="headerlink" title="修改config.php"></a>修改config.php</h2><p>找到根目录下的config.php文件，修改相关数据。不建议修改其它的，数据库名称默认就可，只设置好你的数据库的密码即可，最后一行填写乱码就可。<br><img src="https://dn-chinmax.qbox.me/wp-content/uploads/2015/10/tiebayunqiandaoconf.png" alt=""><br>（这里借下<a href="https://okwoo.com/build-baidu-cloud-vps-registration-tutorial" target="_blank" rel="noopener">原博</a>的图，懒得截自己的图打码了）</p>
+<h2 id="安装数据库"><a href="#安装数据库" class="headerlink" title="安装数据库"></a>安装数据库</h2><p>为了安装过程顺利，我们最好手动安装数据库。首先在浏览器输入：服务器IP/phpmyadmin<br>成功进入后台之后，新建一个名字叫tiebacloud的数据库（与你在上一步中设定的数据库名称相同）。<br><br><img src="/img/9.png" alt=""></p>
+<h2 id="开始安装"><a href="#开始安装" class="headerlink" title="开始安装"></a>开始安装</h2><p>在本地浏览器输入服务器IP，根据一系列提示开始安装。  </p>
+<h3 id="点击“前往安装”"><a href="#点击“前往安装”" class="headerlink" title="点击“前往安装”"></a>点击“前往安装”</h3><p><img src="/img/10.png" alt=""></p>
+<h3 id="阅读协议"><a href="#阅读协议" class="headerlink" title="阅读协议"></a>阅读协议</h3><p>（反正你也不会读）选择“我接受”。在弹出的对话框内，点击“确定”。<br><img src="/img/11.png" alt=""></p>
+<h3 id="功能检查界面"><a href="#功能检查界面" class="headerlink" title="功能检查界面"></a>功能检查界面</h3><p>在这里我遇到了一个问题，印象中是不支持Curl导致无法签到之类的：<a href="http://jingyan.baidu.com/article/a681b0de39c47d3b1943467a.html" target="_blank" rel="noopener">解决方案</a><br>没什么问题的话就直接下一步<br><br><img src="/img/12.png" alt=""><br>附：虽然我上面说有问题，但我还是直接下一步了，后面搭建好运行时才又出了问题，用的是上面提供的解决方案。</p>
+<h3 id="设置运行环境界面"><a href="#设置运行环境界面" class="headerlink" title="设置运行环境界面"></a>设置运行环境界面</h3><p>由于我们的VPS是Linux系统，选择“不，我不是”。<br><img src="/img/13.png" alt=""></p>
+<h3 id="设置所需信息界面"><a href="#设置所需信息界面" class="headerlink" title="设置所需信息界面"></a>设置所需信息界面</h3><p>在自动获得数据库配置信息里，选择“是”。这里填的就是你之后登录用的管理员账号，填写相关信息后“下一步”。<br><img src="/img/14.png" alt=""></p>
+<h3 id="安装完成"><a href="#安装完成" class="headerlink" title="安装完成"></a>安装完成</h3><p><img src="https://dn-chinmax.qbox.me/wp-content/uploads/2015/10/tiebayunqiandaoguide6.png" alt=""><br>然后如果又跳回一开始的界面，就按照它说的在setup目录下创建一个install.lock空文件即可。</p>
+<h3 id="crontab定时设置"><a href="#crontab定时设置" class="headerlink" title="crontab定时设置"></a>crontab定时设置</h3><p>接着在服务器计划任务里添加do.php，命令行输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br></pre></td></tr></table></figure>
+<p>然后在文件里添加这一行代码：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* * * * * /usr/bin/php -f /var/www/html/do.php</span><br></pre></td></tr></table></figure>
+<p>保存退出，然后重启服务：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> service cron restart</span><br></pre></td></tr></table></figure>
+<p>改一下do.php的执行权限：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sudo</span> chmod +x /var/www/html/do.php</span><br></pre></td></tr></table></figure>
+<h1 id="后续配置"><a href="#后续配置" class="headerlink" title="后续配置"></a>后续配置</h1><p>到这里就算是搭建完成了，剩下的就是对网站做一些设置，以及装一些插件（可选）。</p>
+<h2 id="网站设置"><a href="#网站设置" class="headerlink" title="网站设置"></a>网站设置</h2><p>用管理员账号登录后，按照网站提示绑定百度账号，推荐用手动绑定。<br><br><img src="/img/2.png" alt=""><br>绑定账号之后，进入云签到设置，刷新自己的贴吧列表。<br><br><img src="/img/3.png" alt=""><br>在设置中心-签到设置里，保持默认即可。签到时间设置“0”，即从凌晨1点开始签到。<br><br><img src="/img/4.png" alt=""><br>如果要手动测试能否执行签到，在浏览器输入：服务器IP/do.php，会即刻执行。<br><img src="/img/5.png" alt=""></p>
+<h2 id="安装插件和样式"><a href="#安装插件和样式" class="headerlink" title="安装插件和样式"></a>安装插件和样式</h2><p>接下来讲一下怎么给网站安装一些作者提供的插件：<a href="http://git.oschina.net/kenvix/Tieba-Cloud-Sign/wikis/%E8%B4%B4%E5%90%A7%E4%BA%91%E7%AD%BE%E5%88%B0%E6%8F%92%E4%BB%B6%E5%BA%93" target="_blank" rel="noopener">插件库</a><br><br><img src="/img/6.png" alt=""><br>这里我们以更换背景插件为例：<br><br><img src="/img/7.png" alt=""><br>获取插件git链接后，进入plugins目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cd</span> /var/www/html/plugins</span><br><span class="line"><span class="variable">$sudo</span> git <span class="built_in">clone</span> https://github.com/chajianku/mok_bgimg.git</span><br></pre></td></tr></table></figure>
+<p>如果你没有安装Git的话，就直接下下来放到plugins文件夹里。<br>安装完成后进入插件管理页面就可以看到新装的插件了：<br><img src="/img/8.png" alt=""><br>然后安装并激活插件就可以了，样式的安装方法同理。</p>
+<h1 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h1><p>至此，整个流程就算是结束了，如果有什么不对的地方欢迎指正。  </p>
+<p>转载请标明出处，谢谢。  </p>
+<p>参考资料：</p>
+<blockquote>
+<p><a href="https://okwoo.com/build-baidu-cloud-vps-registration-tutorial" target="_blank" rel="noopener">VPS搭建百度贴吧云签到详细教程</a></p>
+<p><a href="http://www.cnblogs.com/lynch_world/archive/2012/01/06/2314717.html" target="_blank" rel="noopener">ubuntu下安装Apache+PHP+Mysql</a></p>
+<p><a href="http://www.jb51.net/article/49983.htm" target="_blank" rel="noopener">linux使用crontab实现PHP执行计划定时任务</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Ubuntu/" rel="tag"># Ubuntu</a>
+              <a href="/tags/%E4%BA%91%E7%AD%BE%E5%88%B0/" rel="tag"># 云签到</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2017/01/16/hello-world/" rel="next" title="Hello World">
+                  <i class="fa fa-chevron-left"></i> Hello World
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2017/01/21/Valve-logo/" rel="prev" title="关于V社游戏开头的Logo以及Mr.Valve">
+                  关于V社游戏开头的Logo以及Mr.Valve <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#准备工作"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装apache2"><span class="nav-number">1.1.</span> <span class="nav-text">安装apache2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装php"><span class="nav-number">1.2.</span> <span class="nav-text">安装php</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装MySQL数据库"><span class="nav-number">1.3.</span> <span class="nav-text">安装MySQL数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装phpmyadmin-Mysql数据库管理"><span class="nav-number">1.4.</span> <span class="nav-text">安装phpmyadmin-Mysql数据库管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置Ubuntu文件执行读写权限"><span class="nav-number">1.5.</span> <span class="nav-text">设置Ubuntu文件执行读写权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Git-安装"><span class="nav-number">1.6.</span> <span class="nav-text">Git 安装</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#云签到安装"><span class="nav-number">2.</span> <span class="nav-text">云签到安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#下载源码"><span class="nav-number">2.1.</span> <span class="nav-text">下载源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修改config-php"><span class="nav-number">2.2.</span> <span class="nav-text">修改config.php</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装数据库"><span class="nav-number">2.3.</span> <span class="nav-text">安装数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开始安装"><span class="nav-number">2.4.</span> <span class="nav-text">开始安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#点击“前往安装”"><span class="nav-number">2.4.1.</span> <span class="nav-text">点击“前往安装”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阅读协议"><span class="nav-number">2.4.2.</span> <span class="nav-text">阅读协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#功能检查界面"><span class="nav-number">2.4.3.</span> <span class="nav-text">功能检查界面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置运行环境界面"><span class="nav-number">2.4.4.</span> <span class="nav-text">设置运行环境界面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置所需信息界面"><span class="nav-number">2.4.5.</span> <span class="nav-text">设置所需信息界面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装完成"><span class="nav-number">2.4.6.</span> <span class="nav-text">安装完成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#crontab定时设置"><span class="nav-number">2.4.7.</span> <span class="nav-text">crontab定时设置</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#后续配置"><span class="nav-number">3.</span> <span class="nav-text">后续配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#网站设置"><span class="nav-number">3.1.</span> <span class="nav-text">网站设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装插件和样式"><span class="nav-number">3.2.</span> <span class="nav-text">安装插件和样式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结尾"><span class="nav-number">4.</span> <span class="nav-text">结尾</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="Orenoid"
+    src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Orenoid</p>
+  <div class="site-description" itemprop="description">A lot to learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="http://steamcommunity.com/profiles/76561198162257296/" title="Steam &amp;rarr; http:&#x2F;&#x2F;steamcommunity.com&#x2F;profiles&#x2F;76561198162257296&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-steam"></i>Steam</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/Orenoid" title="https:&#x2F;&#x2F;github.com&#x2F;Orenoid" rel="noopener" target="_blank">GitHub</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://weibo.com/5000490293/profile?is_all=1" title="http:&#x2F;&#x2F;weibo.com&#x2F;5000490293&#x2F;profile?is_all=1" rel="noopener" target="_blank">Weibo</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://myanimelist.net/profile/Orenoid" title="https:&#x2F;&#x2F;myanimelist.net&#x2F;profile&#x2F;Orenoid" rel="noopener" target="_blank">MAL</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Orenoid</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

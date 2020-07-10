@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Orenoid&#39;s Blog</title>
+  <icon>https://blog.orenoid.com/icon.png</icon>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://blog.orenoid.com/"/>
+  <updated>2020-07-10T02:03:17.638Z</updated>
+  <id>https://blog.orenoid.com/</id>
+  
+  <author>
+    <name>Orenoid</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>浅谈Python函数、方法与描述符</title>
+    <link href="https://blog.orenoid.com/2020/03/20/python-descriptor/"/>
+    <id>https://blog.orenoid.com/2020/03/20/python-descriptor/</id>
+    <published>2020-03-20T09:01:46.000Z</published>
+    <updated>2020-07-10T02:03:17.638Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这两天在群里被科普了一个知识点，感觉很有意思，简单做个分享。&lt;/p&gt;
+&lt;p&gt;一直以来我都以为，实例方法隐式传入self的行为是解释器级别的特殊设计，当我们调用实例方法的时候，解释器会自动传入实例对象本身，很多文章和教程也是这么写的。虽然从结果上来讲，这个说法没有太大问题，但是严格意义上来讲，解释器并没有真正执行传入&lt;code&gt;self&lt;/code&gt;这个动作。隐式传入&lt;code&gt;self&lt;/code&gt;这个行为，仅仅是基于描述符（descriptor）的一个通用设计而已。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Python" scheme="https://blog.orenoid.com/tags/Python/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Python标准库lru_cache源码解读与改造</title>
+    <link href="https://blog.orenoid.com/2020/03/13/lru-cache/"/>
+    <id>https://blog.orenoid.com/2020/03/13/lru-cache/</id>
+    <published>2020-03-13T07:41:42.000Z</published>
+    <updated>2020-07-10T02:02:46.639Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;之前写一个小项目需要用到过期缓存功能，因为想尽量轻量一些，只在内存中进行缓存，不打算走IO。虽说Python官方的lru_cache很好用，但是偏偏又不提供过期功能。简单搜了下，发现有人提供了&lt;a href=&quot;https://gist.github.com/Morreski/c1d08a3afa4040815eafd3891e16b945&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;一个附带过期功能的版本&lt;/a&gt;。
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Python" scheme="https://blog.orenoid.com/tags/Python/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker build优化小技巧</title>
+    <link href="https://blog.orenoid.com/2019/12/17/docker-build-optimize/"/>
+    <id>https://blog.orenoid.com/2019/12/17/docker-build-optimize/</id>
+    <published>2019-12-17T20:57:10.000Z</published>
+    <updated>2020-07-10T01:34:12.826Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近开发项目调试的时候改用Docker来运行，主要是为了让开发环境和生产环境尽可能一致。但开发过程中很快发现一个问题，Docker构建镜像太慢了，每次改了一点代码，想要debug就得重新构建，然后要等它下载一堆依赖。开发了一天后，忍不了了，抽空查了下Docker build缓存的相关资料。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Docker" scheme="https://blog.orenoid.com/tags/Docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Flask源码阅读笔记</title>
+    <link href="https://blog.orenoid.com/2019/11/23/flask-source-code/"/>
+    <id>https://blog.orenoid.com/2019/11/23/flask-source-code/</id>
+    <published>2019-11-23T03:07:05.000Z</published>
+    <updated>2020-07-10T02:04:14.716Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Flask和Django都是基于wsgi协议去实现的Python Web框架。本文将从与开发者相关度最高的地方入手：请求处理。&lt;/p&gt;
+&lt;p&gt;根据wsgi协议的规定，application需要提供一个callable对象给服务器（或中间件，后略），分别接收两个参数：environ字典与start_resposne函数（当然也可以是其他callable对象），这两个参数通常由服务器传入。Python官方提供了一个简单的例子：&lt;/p&gt;
+&lt;figure class=&quot;highlight python&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;demo_app&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;(environ,start_response)&lt;/span&gt;:&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; io &lt;span class=&quot;keyword&quot;&gt;import&lt;/span&gt; StringIO&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    stdout = StringIO()&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    print(&lt;span class=&quot;string&quot;&gt;&quot;Hello world!&quot;&lt;/span&gt;, file=stdout)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    print(file=stdout)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    h = sorted(environ.items())&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;for&lt;/span&gt; k,v &lt;span class=&quot;keyword&quot;&gt;in&lt;/span&gt; h:&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        print(k,&lt;span class=&quot;string&quot;&gt;&#39;=&#39;&lt;/span&gt;,repr(v), file=stdout)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    start_response(&lt;span class=&quot;string&quot;&gt;&quot;200 OK&quot;&lt;/span&gt;, [(&lt;span class=&quot;string&quot;&gt;&#39;Content-Type&#39;&lt;/span&gt;,&lt;span class=&quot;string&quot;&gt;&#39;text/plain; charset=utf-8&#39;&lt;/span&gt;)])&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; [stdout.getvalue().encode(&lt;span class=&quot;string&quot;&gt;&quot;utf-8&quot;&lt;/span&gt;)]&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Python" scheme="https://blog.orenoid.com/tags/Python/"/>
+    
+      <category term="Flask" scheme="https://blog.orenoid.com/tags/Flask/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hexo博客Docker化实践</title>
+    <link href="https://blog.orenoid.com/2019/10/15/docker-hexo/"/>
+    <id>https://blog.orenoid.com/2019/10/15/docker-hexo/</id>
+    <published>2019-10-15T02:08:57.000Z</published>
+    <updated>2020-04-11T02:11:01.626Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;前段时间学习了Docker的基本使用之后，决定借助Docker来解决麻烦的博客迁移问题。&lt;/p&gt;
+&lt;p&gt;我的博客是基于Hexo与Github Pages来实现的，属于静态博客。实际上从17年就开始折腾了，然后中途换了两次电脑，每次把npm依赖环境以及博客文件迁移到新电脑上都很麻烦。比如安装新环境，因为我不是前端，对工具不熟悉，每次都得边操作边查。装完后还得研究Hexo的配置，如果版本跟以前的不兼容的话，旧的配置文件基本就作废了，又得从头看文档。同理还得安装主题，又得把上面的问题过一遍，而且中途还会因为国内糟糕的网络环境衍生出更多烦人的问题。&lt;/p&gt;
+&lt;p&gt;所以这次决定借助docker来简化迁移流程，让自己少掉点头发。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Hexo" scheme="https://blog.orenoid.com/tags/Hexo/"/>
+    
+      <category term="Docker" scheme="https://blog.orenoid.com/tags/Docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>从Python转向Java的一些感想</title>
+    <link href="https://blog.orenoid.com/2019/09/28/python2java/"/>
+    <id>https://blog.orenoid.com/2019/09/28/python2java/</id>
+    <published>2019-09-28T01:42:45.000Z</published>
+    <updated>2020-04-11T02:11:01.628Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近从Python转到了Java，写了一个多月，帮公司写了一个项目，谈谈感想。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Python" scheme="https://blog.orenoid.com/tags/Python/"/>
+    
+      <category term="Java" scheme="https://blog.orenoid.com/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Python装饰器与单元测试</title>
+    <link href="https://blog.orenoid.com/2019/08/07/decorator-unittest/"/>
+    <id>https://blog.orenoid.com/2019/08/07/decorator-unittest/</id>
+    <published>2019-08-07T06:27:56.000Z</published>
+    <updated>2020-04-11T02:11:01.625Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近在给一个项目写单元测试的时候遇到一个问题，如何对带装饰器的函数进行测试。&lt;/p&gt;
+&lt;p&gt;先说说问题是怎么来的。在我看来，单元测试，顾名思义应该以最小单元作为测试对象，而装饰器与原函数明显是两个不同的功能单元，所以我觉得两者应该分开进行测试。&lt;br&gt;尽管我们可以图省事直接对新函数直接进行测试，但是会对导致测试结果不够直观，比如说我改动装饰器的时候写了个BUG，但是从单元测试体现出来的是，原函数出问题了，尽管我压根没动过它的代码。所以就诞生了这么一个需求，如何获取被装饰过的原函数。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Python" scheme="https://blog.orenoid.com/tags/Python/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>socket编程指南</title>
+    <link href="https://blog.orenoid.com/2018/12/02/python-socket/"/>
+    <id>https://blog.orenoid.com/2018/12/02/python-socket/</id>
+    <published>2018-12-02T03:24:14.000Z</published>
+    <updated>2020-04-11T02:11:01.628Z</updated>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;本文翻译自Python官方文档中的这篇&lt;a href=&quot;https://docs.python.org/3.8/howto/sockets.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;《Socket Programming HOWTO》&lt;/a&gt;，作者：Gordon McMillan&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&quot;摘要&quot;&gt;&lt;a href=&quot;#摘要&quot; class=&quot;headerlink&quot; title=&quot;摘要&quot;&gt;&lt;/a&gt;摘要&lt;/h4&gt;&lt;p&gt;socket几乎到处都有被用到，但却是被误解得最多的技术之一。本文将对对socket进行一个总体的概述，但这并不是真正的教程，要会使用的话还得进一步自己去研究。文章不会对socket相关细节面面俱到（太多了），但是我希望它能提供足够的背景知识，让你像模像样的开始使用套接字。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Python" scheme="https://blog.orenoid.com/tags/Python/"/>
+    
+      <category term="网络" scheme="https://blog.orenoid.com/tags/%E7%BD%91%E7%BB%9C/"/>
+    
+      <category term="翻译" scheme="https://blog.orenoid.com/tags/%E7%BF%BB%E8%AF%91/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Git与VS Code笔记</title>
+    <link href="https://blog.orenoid.com/2017/02/15/Git%E4%B8%8EVS-Code%E7%AC%94%E8%AE%B0/"/>
+    <id>https://blog.orenoid.com/2017/02/15/Git%E4%B8%8EVS-Code%E7%AC%94%E8%AE%B0/</id>
+    <published>2017-02-15T20:39:59.000Z</published>
+    <updated>2020-04-11T02:11:01.624Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;本文仅作笔记自用，不作参考&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;　　由于平时没怎么有用Git的习惯，每次用的时候才去现查，结果到头来就记得init/add/commit这几个基础的不能再基础的命令。另一方面虽然用了有一段时间VSCode了，知道它自带Git支持，却因为连Git都不怎么会用，就懒得去了解这个功能了。&lt;br&gt;　　这几天又要用到Git，实在觉得有点烦了，决定把Git的基本功能都过一遍，顺带研究下VSCode的Git支持，写个博文记录一下，免得以后又要查老半天。  &lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Git" scheme="https://blog.orenoid.com/tags/Git/"/>
+    
+      <category term="VSCode" scheme="https://blog.orenoid.com/tags/VSCode/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>关于V社游戏开头的Logo以及Mr.Valve</title>
+    <link href="https://blog.orenoid.com/2017/01/21/Valve-logo/"/>
+    <id>https://blog.orenoid.com/2017/01/21/Valve-logo/</id>
+    <published>2017-01-21T10:06:03.000Z</published>
+    <updated>2020-04-11T02:11:01.625Z</updated>
+    
+    <summary type="html">
+    
+      &lt;blockquote class=&quot;blockquote-center&quot;&gt;&lt;big&gt;&lt;b&gt;Open your mind , Open your eyes&lt;/b&gt;&lt;/big&gt;&lt;/blockquote&gt;
+
+&lt;p&gt;　　如果你玩过V社的游戏的话，那么下图右边这位吴克你应该会有点面熟，在V社知名游戏Dota2，传送门系列，以及求生之路系列游戏里的Logo都有他的背影。&lt;br&gt;&lt;img src=&quot;/img/valve/1.png&quot; class=&quot;full-image&quot; /&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="游戏" scheme="https://blog.orenoid.com/categories/%E6%B8%B8%E6%88%8F/"/>
+    
+    
+      <category term="Steam" scheme="https://blog.orenoid.com/tags/Steam/"/>
+    
+      <category term="Valve" scheme="https://blog.orenoid.com/tags/Valve/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>VPS贴吧云签到搭建教程 基于Ubuntu 14.04</title>
+    <link href="https://blog.orenoid.com/2017/01/19/VPS%E8%B4%B4%E5%90%A7%E4%BA%91%E7%AD%BE%E5%88%B0%E6%90%AD%E5%BB%BA%E6%95%99%E7%A8%8B-Ubuntu-14-04/"/>
+    <id>https://blog.orenoid.com/2017/01/19/VPS%E8%B4%B4%E5%90%A7%E4%BA%91%E7%AD%BE%E5%88%B0%E6%90%AD%E5%BB%BA%E6%95%99%E7%A8%8B-Ubuntu-14-04/</id>
+    <published>2017-01-19T09:24:38.000Z</published>
+    <updated>2020-04-11T02:11:01.624Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/img/15.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;　　之前在新浪云上也搭过一个云签到，因为懒的原因一直没想把它迁移到自己的服务器上，奈何新浪后来改了扣费标准，云豆的消耗翻了一番，所以这几天抽空在服务器上搭了一个，顺便升到了最新版。&lt;br&gt;　　安装之前在网上搜了一下，发现云签到的相关教程基本上都是基于各种PaaS平台,基于VPS搭建的屈指可数，找到的也不够详细。所以搭建完成以后决定写下整个流程，一方面是供别人参考，一方面是做个记录，以及给自己博客填充点东西。。&lt;br&gt;　　开始之前先强调一下，本流程并不保证能完全正确，跟你的实际环境很可能会有出入，所以遇到问题请善用搜索。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="技术" scheme="https://blog.orenoid.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="Ubuntu" scheme="https://blog.orenoid.com/tags/Ubuntu/"/>
+    
+      <category term="云签到" scheme="https://blog.orenoid.com/tags/%E4%BA%91%E7%AD%BE%E5%88%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="https://blog.orenoid.com/2017/01/16/hello-world/"/>
+    <id>https://blog.orenoid.com/2017/01/16/hello-world/</id>
+    <published>2017-01-16T10:14:23.000Z</published>
+    <updated>2020-04-11T02:11:01.626Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+</feed>

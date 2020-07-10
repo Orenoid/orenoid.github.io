@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="Orenoid's Blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"always","offset":12,"onmobile":true},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="之前写一个小项目需要用到过期缓存功能，因为想尽量轻量一些，只在内存中进行缓存，不打算走IO。虽说Python官方的lru_cache很好用，但是偏偏又不提供过期功能。简单搜了下，发现有人提供了一个附带过期功能的版本。">
+<meta name="keywords" content="Python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python标准库lru_cache源码解读与改造">
+<meta property="og:url" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;2020&#x2F;03&#x2F;13&#x2F;lru-cache&#x2F;index.html">
+<meta property="og:site_name" content="Orenoid&#39;s Blog">
+<meta property="og:description" content="之前写一个小项目需要用到过期缓存功能，因为想尽量轻量一些，只在内存中进行缓存，不打算走IO。虽说Python官方的lru_cache很好用，但是偏偏又不提供过期功能。简单搜了下，发现有人提供了一个附带过期功能的版本。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;lru_cache&#x2F;01.webp">
+<meta property="og:updated_time" content="2020-07-10T02:02:46.639Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;img&#x2F;lru_cache&#x2F;01.webp">
+
+<link rel="canonical" href="https://blog.orenoid.com/2020/03/13/lru-cache/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Python标准库lru_cache源码解读与改造 | Orenoid's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Orenoid's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.orenoid.com/2020/03/13/lru-cache/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Orenoid">
+      <meta itemprop="description" content="A lot to learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Orenoid's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python标准库lru_cache源码解读与改造
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-13 07:41:42" itemprop="dateCreated datePublished" datetime="2020-03-13T07:41:42+00:00">2020-03-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>之前写一个小项目需要用到过期缓存功能，因为想尽量轻量一些，只在内存中进行缓存，不打算走IO。虽说Python官方的lru_cache很好用，但是偏偏又不提供过期功能。简单搜了下，发现有人提供了<a href="https://gist.github.com/Morreski/c1d08a3afa4040815eafd3891e16b945" target="_blank" rel="noopener">一个附带过期功能的版本</a>。<a id="more"></a>代码如下所示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime, timedelta</span><br><span class="line"><span class="keyword">import</span> functools</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">timed_cache</span><span class="params">(**timedelta_kwargs)</span>:</span>                                              </span><br><span class="line">                                                                                  </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_wrapper</span><span class="params">(f)</span>:</span>                                                              </span><br><span class="line">        update_delta = timedelta(**timedelta_kwargs)                              </span><br><span class="line">        next_update = datetime.utcnow() + update_delta                            </span><br><span class="line">        <span class="comment"># Apply @lru_cache to f with no cache size limit                          </span></span><br><span class="line">        f = functools.lru_cache(<span class="literal">None</span>)(f)                                          </span><br><span class="line">                                                                                                                      </span><br><span class="line"><span class="meta">        @functools.wraps(f)                                                       </span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">_wrapped</span><span class="params">(*args, **kwargs)</span>:</span>                                            </span><br><span class="line">            <span class="keyword">nonlocal</span> next_update                                                  </span><br><span class="line">            now = datetime.utcnow()                                               </span><br><span class="line">            <span class="keyword">if</span> now &gt;= next_update:                                                </span><br><span class="line">                f.cache_clear()                                                   </span><br><span class="line">                next_update = now + update_delta                                </span><br><span class="line">            <span class="keyword">return</span> f(*args, **kwargs)                                             </span><br><span class="line">        <span class="keyword">return</span> _wrapped                                                           </span><br><span class="line">    <span class="keyword">return</span> _wrapper</span><br></pre></td></tr></table></figure>
+
+
+
+<p>看了下他的代码，实现方式很简单，就是在官方的lru_cache外面又包了一层，然后自己管理缓存的过期期限。但细看之后发现这个装饰器有个很大的问题，它会在过期的时候把所有缓存的函数返回结果清空掉，哪怕B比A要晚缓存了一个小时，只要A一过期，就会把其他的缓存一并清空掉。这显然不合理也不好用，理想情况应该是每个参数组合都有自己的过期期限，互相独立，互不干扰。</p>
+<p>按理说这个逻辑并不复杂，只要在增加/获取缓存的同时，加上过期时间的存储和判断即可，原本我准备上面的样例那样给官方的装饰器再包装一层，但很快发现做不到这一点，因为官方的<code>lru_cache</code>只对外暴露了两个操作缓存的接口，分别是<code>func.cache_info()</code>和<code>func.cache_clear()</code>，查看缓存命中统计和清空缓存，没办法对cache字典的单个key进行操作（缓存其实就是存在了一个叫cache的字典里，后面看源码就知道了）。所以如果要对每个key做独立的过期，就必须改动内部逻辑了。其实到这里，从实用的角度出发，直接找第三方库是比较合理的。不过我出于兴趣，决定自己来实现一下。</p>
+<p>要改，那么自然要先读。这里简单过一下Python3.6的<code>lru_cache</code>实现。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lru_cache</span><span class="params">(maxsize=<span class="number">128</span>, typed=False)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> maxsize <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">and</span> <span class="keyword">not</span> isinstance(maxsize, int):</span><br><span class="line">        <span class="keyword">raise</span> TypeError(<span class="string">'Expected maxsize to be an integer or None'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">decorating_function</span><span class="params">(user_function)</span>:</span></span><br><span class="line">        wrapper = _lru_cache_wrapper(user_function, maxsize, typed, _CacheInfo)</span><br><span class="line">        <span class="keyword">return</span> update_wrapper(wrapper, user_function) <span class="comment"># 返回的是函数，不是函数结果</span></span><br><span class="line">    <span class="keyword">return</span> decorating_function</span><br></pre></td></tr></table></figure>
+
+<p>要读懂这段代码需要对Python的装饰器工作原理有一定了解，本文不做赘述。这段代码显然没涉及太多逻辑，开头校验下参数，把函数和装饰器参数传进了<code>_lru_cache_wrapper</code>函数，后面的update_wrapper只是做了些属性转移的工作，跟缓存功能没太大关系。我们再进到<code>_lru_cache_wrapper</code>函数看看，实际上主要的缓存逻辑实现都在这里头了。接下来分段来做解读。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_lru_cache_wrapper</span><span class="params">(user_function, maxsize, typed, _CacheInfo)</span>:</span></span><br><span class="line">    sentinel = object()          <span class="comment"># 用来判断缓存是否命中的唯一标识</span></span><br><span class="line">    make_key = _make_key         <span class="comment"># 根据参数生成缓存key的函数</span></span><br><span class="line">    PREV, NEXT, KEY, RESULT = <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>   <span class="comment"># 给下面链表的节点对应位置命名，提升可读性</span></span><br><span class="line"></span><br><span class="line">    cache = &#123;&#125;				 <span class="comment"># 用来缓存的字典</span></span><br><span class="line">    hits = misses = <span class="number">0</span>		 <span class="comment"># 缓存命中统计</span></span><br><span class="line">    full = <span class="literal">False</span>			 <span class="comment"># 缓存是不是满了</span></span><br><span class="line">    cache_get = cache.get</span><br><span class="line">    cache_len = cache.__len__</span><br><span class="line">    lock = RLock()           <span class="comment"># 链表操作是非线程安全的，需要加锁</span></span><br><span class="line">    root = []                <span class="comment"># 环形双向链表的根节点</span></span><br><span class="line">    root[:] = [root, root, <span class="literal">None</span>, <span class="literal">None</span>]     <span class="comment"># 链表初始化</span></span><br></pre></td></tr></table></figure>
+
+<p>这里基本都是些初始化，光看这部分可能会有点云里雾水的，主要还得看后面都对这些常量、变量做了些什么事情。先简单说下<code>lru_cache</code>的实现原理，它是借助Python字典和双向环形链表来实现的。</p>
+<p><code>root</code>就是这个链表的根节点，<code>root</code>是个数组，链表里的其他节点也是这个结构，分别包含四个部分：前节点（PREV），后节点（NEXT），字典键（KEY）和函数结果（RESULT）。在通常情况下，根节点的左侧（PREV）是最后被访问的数据，而右侧（NEXT）则是最旧的缓存。这个链表的作用是维护缓存的访问顺序，确保在缓存满了的情况下能够进行时间复杂度为O(1)的缓存增加与删除操作。</p>
+<p>而<code>cache</code>是个字典，它的键是由函数参数生成的哈希对象，和链表结点里的KEY是同一种东西。而字典的value则是不一定的，在不同情况下存的东西并不一样，但抽象意义上来讲都可以理解为函数返回结果，它的作用就是用来快速获取缓存中的函数返回结果，时间复杂度为O(1)。</p>
+<p>这么说还是有点抽象了，先看代码，官方的实现里对<code>maxsize</code>的两种特殊情况做了单独实现，一种是不需要缓存的情况，一种是缓存没有上限的情况。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> maxsize == <span class="number">0</span>:</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wrapper</span><span class="params">(*args, **kwds)</span>:</span></span><br><span class="line">        <span class="keyword">nonlocal</span> misses</span><br><span class="line">        result = user_function(*args, **kwds)</span><br><span class="line">        misses += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line"><span class="keyword">elif</span> maxsize <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wrapper</span><span class="params">(*args, **kwds)</span>:</span></span><br><span class="line">        <span class="comment"># Simple caching without ordering or size limit</span></span><br><span class="line">        <span class="keyword">nonlocal</span> hits, misses</span><br><span class="line">        key = make_key(args, kwds, typed)</span><br><span class="line">        result = cache_get(key, sentinel)</span><br><span class="line">        <span class="keyword">if</span> result <span class="keyword">is</span> <span class="keyword">not</span> sentinel:</span><br><span class="line">            hits += <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        result = user_function(*args, **kwds)</span><br><span class="line">        cache[key] = result</span><br><span class="line">        misses += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+
+<p>第一种没啥说的，简单提下第二种，这里cache的value直接存的是函数的返回结果，逻辑很好读懂，如果有缓存则返回缓存，没有则调用<code>user_function</code>，并将函数结果缓存起来。<code>setinal</code>的作用就是作为唯一标识，判断函数结果是否已经缓存了，不用None是为了防止有些函数返回的可能就是None。并且由于上面对字典的操作都是线程安全的，所以也用不到锁。而且我们发现这里也压根没用到链表。</p>
+<p>接下来就是第三种，设置了<code>maxsize</code>的情况。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ...</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wrapper</span><span class="params">(*args, **kwds)</span>:</span></span><br><span class="line">        <span class="keyword">nonlocal</span> root, hits, misses, full</span><br><span class="line">        key = make_key(args, kwds, typed)</span><br><span class="line">        <span class="keyword">with</span> lock:</span><br><span class="line">            link = cache_get(key)</span><br><span class="line">            <span class="keyword">if</span> link <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">                link_prev, link_next, _key, result = link</span><br><span class="line">                link_prev[NEXT] = link_next</span><br><span class="line">                link_next[PREV] = link_prev</span><br><span class="line">                last = root[PREV]</span><br><span class="line">                last[NEXT] = root[PREV] = link</span><br><span class="line">                link[PREV] = last</span><br><span class="line">                link[NEXT] = root</span><br><span class="line">                hits += <span class="number">1</span></span><br><span class="line">                <span class="keyword">return</span> result</span><br><span class="line">        result = user_function(*args, **kwds)</span><br><span class="line">        <span class="keyword">with</span> lock:</span><br><span class="line">            <span class="keyword">if</span> key <span class="keyword">in</span> cache:</span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line">            <span class="keyword">elif</span> full:</span><br><span class="line">                oldroot = root</span><br><span class="line">                oldroot[KEY] = key</span><br><span class="line">                oldroot[RESULT] = result</span><br><span class="line">                root = oldroot[NEXT]</span><br><span class="line">                oldkey = root[KEY]</span><br><span class="line">                oldresult = root[RESULT]</span><br><span class="line">                root[KEY] = root[RESULT] = <span class="literal">None</span></span><br><span class="line">                <span class="keyword">del</span> cache[oldkey]</span><br><span class="line">                cache[key] = oldroot</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                last = root[PREV]</span><br><span class="line">                link = [last, root, key, result]</span><br><span class="line">                last[NEXT] = root[PREV] = cache[key] = link</span><br><span class="line">                full = (cache_len() &gt;= maxsize)</span><br><span class="line">            misses += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+
+<p>这部分主要分为两部分逻辑，缓存命中和未命中。前面初始化的链表和锁到这里才派上了用场。</p>
+<p>缓存命中时，需要把原先的缓存节点移动到<code>root</code>节点的左侧，作为最近访问节点。</p>
+<p>而未命中时，需要先调用<code>user_function</code>获取结果，然后又出现了两种分支逻辑：缓存满了和没满。</p>
+<p>如果没满，就只需要简单地把新节点插入到<code>root</code>前面即可，记得更新下<code>full</code>变量。</p>
+<p>如果缓存满了，就把新结果放进当前root节点，最旧的缓存节点设置为新的root，并清除数据，更新cache。</p>
+<p>这里配合下面的数据结构图可能会好理解一点。</p>
+<p><img src="/img/lru_cache/01.webp" alt=""></p>
+<p>剩下的其实是些相对不太重要的代码了，就是对外暴露一些操作接口，这里不贴上来了。</p>
+<p>看完源码后，现在知道工作原理了，其实要实现过期功能，就只需要在旧的逻辑里，插入处理过期逻辑的代码即可。这里就说下大致思路，不贴代码了。完整代码可以点<a href="https://gist.github.com/Orenoid/bc011c7bb60c128d2767739fead29cc1" target="_blank" rel="noopener">这里</a>查看。</p>
+<ol>
+<li>当<code>maxsize</code>为0的时候，没有缓存，所以不变。</li>
+<li>当<code>maxsize</code>为<code>None</code>的时候，即缓存没有上限，我们对字典的<code>value</code>稍作调整，把函数结果和缓存时间一起存进去，然后在取值的时候，判断是否已经过期，过期的话就按照缓存未命中处理，重新调用<code>user_function</code>并缓存结果即可。</li>
+<li>当<code>maxsize</code>为大于0的时候，我们把缓存的时间一并存入到链表的节点里，只被动过期，在命中缓存的时候，判断是否已经过期了，是的话，就把节点移除掉，当然也要记得更新<code>cache</code>，然后按照缓存未命中的逻辑继续往下走就行了。</li>
+</ol>
+<p>大致逻辑是这样，剩下的都是一些细节上的处理。另外我在重新实现的时候，重新封装了一个类来作为链表的节点，而不是像官方那样用的数组，差不多就这些了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/12/17/docker-build-optimize/" rel="next" title="Docker build优化小技巧">
+                  <i class="fa fa-chevron-left"></i> Docker build优化小技巧
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2020/03/20/python-descriptor/" rel="prev" title="浅谈Python函数、方法与描述符">
+                  浅谈Python函数、方法与描述符 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="Orenoid"
+    src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Orenoid</p>
+  <div class="site-description" itemprop="description">A lot to learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="http://steamcommunity.com/profiles/76561198162257296/" title="Steam &amp;rarr; http:&#x2F;&#x2F;steamcommunity.com&#x2F;profiles&#x2F;76561198162257296&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-steam"></i>Steam</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/Orenoid" title="https:&#x2F;&#x2F;github.com&#x2F;Orenoid" rel="noopener" target="_blank">GitHub</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://weibo.com/5000490293/profile?is_all=1" title="http:&#x2F;&#x2F;weibo.com&#x2F;5000490293&#x2F;profile?is_all=1" rel="noopener" target="_blank">Weibo</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://myanimelist.net/profile/Orenoid" title="https:&#x2F;&#x2F;myanimelist.net&#x2F;profile&#x2F;Orenoid" rel="noopener" target="_blank">MAL</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Orenoid</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

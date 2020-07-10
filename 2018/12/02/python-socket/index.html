@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="Orenoid's Blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"always","offset":12,"onmobile":true},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="本文翻译自Python官方文档中的这篇《Socket Programming HOWTO》，作者：Gordon McMillan  摘要socket几乎到处都有被用到，但却是被误解得最多的技术之一。本文将对对socket进行一个总体的概述，但这并不是真正的教程，要会使用的话还得进一步自己去研究。文章不会对socket相关细节面面俱到（太多了），但是我希望它能提供足够的背景知识，让你像模像样的开始">
+<meta name="keywords" content="Python,网络,翻译">
+<meta property="og:type" content="article">
+<meta property="og:title" content="socket编程指南">
+<meta property="og:url" content="https:&#x2F;&#x2F;blog.orenoid.com&#x2F;2018&#x2F;12&#x2F;02&#x2F;python-socket&#x2F;index.html">
+<meta property="og:site_name" content="Orenoid&#39;s Blog">
+<meta property="og:description" content="本文翻译自Python官方文档中的这篇《Socket Programming HOWTO》，作者：Gordon McMillan  摘要socket几乎到处都有被用到，但却是被误解得最多的技术之一。本文将对对socket进行一个总体的概述，但这并不是真正的教程，要会使用的话还得进一步自己去研究。文章不会对socket相关细节面面俱到（太多了），但是我希望它能提供足够的背景知识，让你像模像样的开始">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-11T02:11:01.628Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://blog.orenoid.com/2018/12/02/python-socket/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>socket编程指南 | Orenoid's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Orenoid's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.orenoid.com/2018/12/02/python-socket/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Orenoid">
+      <meta itemprop="description" content="A lot to learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Orenoid's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          socket编程指南
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-02 03:24:14" itemprop="dateCreated datePublished" datetime="2018-12-02T03:24:14+00:00">2018-12-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>本文翻译自Python官方文档中的这篇<a href="https://docs.python.org/3.8/howto/sockets.html" target="_blank" rel="noopener">《Socket Programming HOWTO》</a>，作者：Gordon McMillan</p>
+</blockquote>
+<h4 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h4><p>socket几乎到处都有被用到，但却是被误解得最多的技术之一。本文将对对socket进行一个总体的概述，但这并不是真正的教程，要会使用的话还得进一步自己去研究。文章不会对socket相关细节面面俱到（太多了），但是我希望它能提供足够的背景知识，让你像模像样的开始使用套接字。</p>
+<a id="more"></a>
+
+<h4 id="socket"><a href="#socket" class="headerlink" title="socket"></a>socket</h4><p>本文只打算讨论<code>INET</code>类型的socket（例如IPv4），事实上至少有99%的场景下用的都是这一类，同时我们也只讨论<code>STREAM</code>类型的（例如TCP）。除非你很清楚实际应该怎么选择（那你也没必要阅读这篇指南了），使用 STREAM 类型的套接字将会得到比其它类型更好的表现与性能。 我会尽量帮你弄明白socket是啥以及如何使用阻塞/非阻塞socket，首先会从阻塞式socket开始介绍，先把这个弄明白了才能进一步研究非阻塞式是如何工作的。</p>
+<p>理解这些东西的难点之一在于「套接字」可以表示很多微妙差异的东西，这取决于上下文。所以首先，让我们先分清楚「客户端」套接字和「服务端」套接字之间的不同，客户端相当于一个会话终端，而服务端则更像是个接线员。客户端应用（比如浏览器）只会用到客户端socket，而对于服务器来说，这两类socket都要使用到。</p>
+<h4 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h4><p>进程间通信有各种各样的方法，但目前socket是最受欢迎的一种。如果任意指定一个平台的话，socket可能没某些其他形式的IPC那么快，但如果要做到跨平台通信的话，socket几乎就是唯一选择了。</p>
+<p>socket是Berkeley发明的，是Unix的BSD风格的一部分。socket与INET的结合使得与世界各地的计算机进行通信变得异常容易（至少与其他方案相比），因此理所当然地，socket这一通信方案在互联网中得到了迅速扩散。</p>
+<h4 id="创建socket"><a href="#创建socket" class="headerlink" title="创建socket"></a>创建socket</h4><p>简略地说，当你点击一个链接来到现在这个页面的时候，你的浏览器就已经做了下面这几件事情：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># create an INET, STREAMing socket</span></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line"><span class="comment"># now connect to the web server on port 80 - the normal http port</span></span><br><span class="line">s.connect((<span class="string">"www.python.org"</span>, <span class="number">80</span>))</span><br></pre></td></tr></table></figure>
+
+<p>当<code>connect</code>成功后，我们就可以通过socket <code>s</code>来对页面上的内容进行请求了，然后再通过同一个socket获取响应内容，这些完成之后这个socket就会被销毁（是的，销毁）。客户端套接字通常用来做一次交换（或者说一小组序列的交换）。</p>
+<p>上面是客户端的情况，而服务器上的流程稍微复杂一些。首先，服务器会创建一个服务端socket：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># create an INET, STREAMing socket</span></span><br><span class="line">serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line"><span class="comment"># bind the socket to a public host, and a well-known port</span></span><br><span class="line">serversocket.bind((socket.gethostname(), <span class="number">80</span>))</span><br><span class="line"><span class="comment"># become a server socket</span></span><br><span class="line">serversocket.listen(<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这里头有几个需要注意的点：我们用的是<code>socket.gethostname()</code>，这样的话这个soccket才是对外部暴露的。如果用的是 <code>s.bind((&#39;localhost&#39;, 80))</code> 或者 <code>s.bind((&#39;127.0.0.1&#39;, 80))</code> ，尽管这依旧是个服务端socket，但是它只会对主机内部可见。而<code>s.bind((&#39;&#39;, 80))</code>指定套接字可以由机器碰巧拥有的任何地址访问。</p>
+<p>另一个需要注意的点是：那些数字较小的端口号通常会保留用于一些常见的服务（例如HTTP、SNMP等）。建议自己开发的时候设置一个较大的端口号数字（4位）。</p>
+<p>最后，<code>listen</code> 方法的参数会告诉socket库，我们希望在队列中累积多达 5 个（通常的最大值）连接请求后再拒绝外部连接。如果你其他带代码写得没问题的话，通常来讲这个数量是足够的了。</p>
+<p>现在，我们有了一个监听80端口的服务端socket，可以开始服务端的主循环逻辑了：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="comment"># accept connections from outside</span></span><br><span class="line">    (clientsocket, address) = serversocket.accept()</span><br><span class="line">    <span class="comment"># now do something with the clientsocket</span></span><br><span class="line">    <span class="comment"># in this case, we'll pretend this is a threaded server</span></span><br><span class="line">    ct = client_thread(clientsocket)</span><br><span class="line">    ct.run()</span><br></pre></td></tr></table></figure>
+
+<p>实际上有三种方式来实现这个循环逻辑：要么分配一个线程来处理客户端线程，要么创建一个新进程来处理，第三种方法则是重构应用逻辑，使用非阻塞式socket，并使用select在我们的服务端socket与任何活动的客户端socket之间进行多路复用，但这个我们之后再介绍。目前最重要的是弄清楚这一点：上面这些全都是服务端socket要干的事情，服务端socket不发送和接收任何数据，它只负责生成客户端socket。每当有某个客户端socket对前面绑定的host和port进行<code>connect()</code>操作的时候，服务端socket就会创建一个新的客户端socket来响应对方的请求。而之后，这两个客户端socket之间就可以自由地进行互相通信了，它们所用的端口是由系统动态分配的，当会话结束的时候就会被回收掉。</p>
+<h4 id="进程间通信（IPC）"><a href="#进程间通信（IPC）" class="headerlink" title="进程间通信（IPC）"></a>进程间通信（IPC）</h4><p>如果你需要在同一台机器上进行两个进程间的快速 IPC 通信，你应该了解管道或者共享内存。如果你决定使用 AF_INET 类型的套接字，绑定「服务端」套接字到 <code>&#39;localhost&#39;</code> 。在大多数平台，这将会使用一个许多网络层间的通用快捷方式（本地回环地址）并且速度会快很多</p>
+<blockquote>
+<p>参见： <a href="https://docs.python.org/zh-cn/3.7/library/multiprocessing.html#module-multiprocessing" target="_blank" rel="noopener"><code>multiprocessing</code></a> 模块使跨平台 IPC 通信成为一个高层的 API</p>
+</blockquote>
+<h4 id="使用socket"><a href="#使用socket" class="headerlink" title="使用socket"></a>使用socket</h4><p>首先要注意的就是，浏览器所用的客户端socket和服务器所用的客户端socket本质上都是相同的，这其实是一个端对端通信。或者换一种说法，就是你作为设计者需要制定一个通信规则。通常来讲，发起连接一方的socket通过发送一个请求或者信号来开始一次会话。但这属于设计决定，并不是socket规则。</p>
+<p>我们可以使用<code>send</code>和<code>recv</code>这两个操作来进行通信，或者也可以把客户端socket转换成file-like对象，然后对其进行读写操作。Java中采用的就是后一种形式，这里不做详谈，不过要提醒一点，采用后一种方案的时候要注意对socket进行<code>flush</code>操作。因为它们都是被缓冲了的“文件”，如果不进行<code>flush</code>，仅仅是写入数据后等待读取响应数据，那么你有可能永远都收不到响应，因为你写入的请求数据可能还在缓冲里面，压根没有被发送出去。</p>
+<p>现在我们来看看socket的主要绊脚石：在网络缓冲区上的<code>send</code>和<code>recv</code>操作。这两个操作并不一定会完全地处理好你交给他们的数据（或者期望从他们那接收到的数据），因为其主要职责还是处理网络缓冲。通常他们只会在网络缓冲区被存入（send）或取出（recv）的时候才会返回，同时告诉你实际上处理了多少字节，而开发者必须自己多次重复调用这两个方法来确保数据被完全处理好了。</p>
+<p>当<code>recv</code>操作返回0个字节的时候，这意味着另一侧已经关闭了连接，我们不会从那边收到任何数据了。而你发送的数据可能已经成功送达，这个之后再做讨论。</p>
+<p>HTTP协议只会用一个socket来进行一次数据传输，客户端先发送一个请求，随后读取服务端返回的响应，随后这个socket就废弃了。这意味着客户端可以通过检测是否收到0字节响应来判断数据是否已经传输完毕了。（译注：这段应该是指HTTP没有启用Keep-Alive的情况）</p>
+<p>但如果你想要复用这个socket，那就意味着你没法在socket上拿到像0字节数据这种传输结束标志的。这里再重复一遍：如果<code>send</code>和<code>recv</code>处理了0个字节后返回，那么这个连接就已经断开了，反之，如果连接没断开，那么你可能就要一直阻塞在<code>recv</code>操作上，socket并不会告诉你接下来已经没有数据了（目前来讲是这样的）。你可已经能想到了：在通信中，一个消息必须要么是固定长度的，要么是有明确边界的，或者是告诉了你这则消息的实际长度，或者就像HTTP协议那样，通过断开连接来告诉你消息已经结束了。这里面任意一个方案都是可行的（但有些方案相对更优一些）。</p>
+<p>假如你不想使用断开连接这种方法的话，那么最简单的还是给消息设置一个固定长度。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MySocket</span>:</span></span><br><span class="line">    <span class="string">"""demonstration class only</span></span><br><span class="line"><span class="string">      - coded for clarity, not efficiency</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, sock=None)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> sock <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            self.sock = socket.socket(</span><br><span class="line">                            socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            self.sock = sock</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">connect</span><span class="params">(self, host, port)</span>:</span></span><br><span class="line">        self.sock.connect((host, port))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">mysend</span><span class="params">(self, msg)</span>:</span></span><br><span class="line">        totalsent = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> totalsent &lt; MSGLEN:</span><br><span class="line">            sent = self.sock.send(msg[totalsent:])</span><br><span class="line">            <span class="keyword">if</span> sent == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">raise</span> RuntimeError(<span class="string">"socket connection broken"</span>)</span><br><span class="line">            totalsent = totalsent + sent</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">myreceive</span><span class="params">(self)</span>:</span></span><br><span class="line">        chunks = []</span><br><span class="line">        bytes_recd = <span class="number">0</span></span><br><span class="line">        <span class="keyword">while</span> bytes_recd &lt; MSGLEN:</span><br><span class="line">            chunk = self.sock.recv(min(MSGLEN - bytes_recd, <span class="number">2048</span>))</span><br><span class="line">            <span class="keyword">if</span> chunk == <span class="string">b''</span>:</span><br><span class="line">                <span class="keyword">raise</span> RuntimeError(<span class="string">"socket connection broken"</span>)</span><br><span class="line">            chunks.append(chunk)</span><br><span class="line">            bytes_recd = bytes_recd + len(chunk)</span><br><span class="line">        <span class="keyword">return</span> <span class="string">b''</span>.join(chunks)</span><br><span class="line">The sending code here <span class="keyword">is</span> usable <span class="keyword">for</span> almost any messagi</span><br></pre></td></tr></table></figure>
+
+<p>这里的发送代码几乎适用于任何消息传递方案。在Python里你可以发送字符串并使用<code>send()</code>来获取其长度（即使里面包含有<code>\0</code>字符也不会有问题）。但很多情况下，负责接收的代码会更复杂一些。（在C语言中可能不会那么麻烦，除非消息已经嵌入<code>\0</code>，这种情况下不能使用strlen。)</p>
+<p>一个最简单的改进方案是，把消息的第一个字符用来指示消息类型，进而根据类型来确定长度。这时候你需要执行两步<code>recv</code>操作，第一次至少获取一个字符，从而得到消息长度，接着循环获取消息剩余的部分。如果你打算采用分隔符的方案，你可以接收任意大小的数据块（对于网络缓冲来说，4096或者8192是一个较为常用以及合适的尺寸），然后在接收到的数据里查找你定好的分隔符。</p>
+<p>需要注意的一个复杂情况是:如果您的会话协议允许多个消息被发送到后面(没有某种类型的应答)，并且您向<code>recv</code>传递了一个任意的块大小，那么您最终可能会读取下面消息的开头。<br>你需要把它放在一边，直到需要的时候再拿出来。</p>
+<p>在消息头部声明其长度（比如用5位数字字符）这种方法会更复杂，因为你可能没法在一次<code>recv</code>中完全接收到这5个字符（信不信由你）。如果只是平时随便写着玩的，你可能不会遇到这种情况，但在高网络负载的情况下，你的代码就会很快出问题，除非你用两个循环来分别获取长度和消息剩余的数据部分。当进行<code>send</code>操作时，你会发现也有这种令人讨厌的情况，<code>send</code>也并不总是在一次传输中就处理完所有数据。即使读过这篇文章，知道这么一回事了，但你迟早还是会被这个问题坑到的。</p>
+<h4 id="二进制数据"><a href="#二进制数据" class="headerlink" title="二进制数据"></a>二进制数据</h4><p>通过套接字传送二进制数据是可行的。主要问题在于并非所有机器都用同样的二进制数据格式。比如 Motorola 芯片用两个十六进制字节 00 01 来表示一个 16 位整数值 1。而 Intel 和 DEC 则会做字节反转 —— 即用 01 00 来表示 1。套接字库要求转换 16 位和 32 位整数 —— <code>ntohl, htonl, ntohs, htons</code>。 其中的<code>n</code>表示 network，<code>h</code>表示 host，<code>s</code>表示 short，<code>l</code>表示 long。在网络序列就是主机序列时它们什么都不做，但是如果机器是字节反转的则会适当地交换字节序。</p>
+<p>在现今的 32 位机器中，二进制数据的 ascii 表示往往比二进制表示要小。这是因为在非常多的时候所有 long 的值均为 0 或者 1。字符串形式的 “0” 为两个字节，而二进制形式则为四个。当然这不适用于固定长度的信息。自行决定，请自行决定。</p>
+<h4 id="断开连接"><a href="#断开连接" class="headerlink" title="断开连接"></a>断开连接</h4><p>严格地说，在断开（<code>close</code>）socket之前，需要先对其进行<code>shutdown</code>操作。<code>shutdown</code>相当于对socket另一侧的一个通知，根据你传递的参数，它可能会传达以下两种不同的信息：“我不会再发送数据了，但还能继续接收”，或者“我不再管你发过来的数据了，谢谢”。但大多数socket库都习惯了开发者会忽略这一规则，索性在<code>close</code>的时候，一并执行了真正意义上的<code>shutdown</code>和<code>close</code>操作。所以大多数情况下，并不需要明确地进行<code>shutdown</code>。</p>
+<h4 id="socket何时销毁"><a href="#socket何时销毁" class="headerlink" title="socket何时销毁"></a>socket何时销毁</h4><p>当使用阻塞式socket的时候，可能遇到的最坏的情况是对面还没有执行<code>close</code>就突然挂掉了，这种时候你的、socket可能就会一直在那干等着。TCP是一个可靠的协议，这会导致它会等很长很长时间才放弃这个连接。如果你是用线程来处理的，那么这个线程实际上已经跟死掉没什么区别了。对这种情况还真没太多处理办法，但其实这个线程并不会消耗太多的资源，只要你别干什么蠢事，比如进行一个阻塞读取操作的时候又还占有着一个锁之类的。千万不要尝试去杀掉这个线程，线程之所以高效，其中一部分原因就是它们避免了与资源自动回收相关的开销。换句话说，如果你设法把线程给干掉了，那么你可能会把整个程序给搞砸掉。</p>
+<h4 id="非阻塞式socket"><a href="#非阻塞式socket" class="headerlink" title="非阻塞式socket"></a>非阻塞式socket</h4><p>如果你已经把前面说的这些都弄明白了，那么就已经基本掌握了socket开发的技术要点。接下来你还是会去调用一些相同的接口，但是如果换一个更加正确的方式，你的应用会完全变了个样。</p>
+<p>在Python中，可以通过<code>socket.setblocking(0)</code>来将一个socket设置为非阻塞的。在C语言里，想这么干会更复杂一些，（一方面，你需要在 BSD 风格的 <code>O_NONBLOCK</code> 和几乎无法区分的 Posix 风格的 <code>O_NDELAY</code> 之间做出选择，这与 <code>TCP_NODELAY</code> 完全不同。）但思路是相同的，先创建socket，然后在使用前变更设置。（如果你疯了的话，你也可以来回切换）</p>
+<p>这样做带来的最主要差别就是，<code>send</code>、<code>recv</code>、<code>connect</code>以及<code>accept</code>这些操作可以不处理任何东西就进行返回。 你（当然）有很多选择，一种是你自己手动检查返回码和错误码，不过这个大概率会让你疯掉。不信的话，有时候你可以试试看。你的程序将会变得臃肿、易错而且非常废CPU。所以我们还是跳过这个及其费脑的方案，看下一个，一个更正确的方案。</p>
+<p>那就是使用<code>select</code>。</p>
+<p>在C语言中，<code>select</code>编程是相当复杂的，而Python中就简单多了，但它与 C 版本也足够接近，如果你在 Python 中理解 <code>select</code> ，那么在 C 中你会几乎不会遇到麻烦：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ready_to_read, ready_to_write, in_error = \</span><br><span class="line">               select.select(</span><br><span class="line">                  potential_readers,</span><br><span class="line">                  potential_writers,</span><br><span class="line">                  potential_errs,</span><br><span class="line">                  timeout)</span><br></pre></td></tr></table></figure>
+
+<p><code>select</code>一共接收三个列表：第一个包含的是那些你想读取数据的socket，第二个是你想写入数据的，第三个（通常是空的）是出错了的，用于排查。需要注意的一点是，一个socket是可以进入上面多个列表的。<code>select</code>操作本身是阻塞的，不过你可以给它设置一个合理的超时期限（比如1分钟），这是个更明智的选择，除非你有充分的理由不这么做。</p>
+<p><code>select</code>也会返回给我们三个列表，它们分别包含了可读的、可写的以及报错的socket。对应你上面传入的三个列表，返回的列表都是相应列表的子集（也可能是空的）。</p>
+<p>如果一个socket出现在了返回的可读socket列表里，那么你可以认为，对这个socket进行<code>recv</code>操作必定能返回些什么。同理，在可写入列表里，你也可以对socket进行发送数据的操作。可能你想要接收/发送的是全部数据，但有总比没有好。（事实上，任何健康的socket都是可写入的，代表的就是网络缓冲区已经可用了而已）</p>
+<p>如果你手里有一个服务端socket，可用把它放到上面的<code>potential_readers</code>列表里，当它变成可读状态的时候，你就可用对它进行<code>accept</code>操作了。而如果你创建了一个新的socket，并尝试与其他人进行<code>connect</code>，那么可以把它放进<code>potential_writers</code>里面，当这个socket变为可写入状态的时候，就说明已经连接成功了。</p>
+<p>实际上，<code>select</code>对于阻塞式socket也是很好用的。这是判断是否阻塞的一种方法——当缓冲区中有内容时，socket作为可读状态返回。然而，这仍然无法帮助确定另一端是否已经完成，或者只是忙于其他事情。</p>
+<p><strong>可移植性警告：</strong>在Unix平台，<code>select</code>对socket和文件都有用，但在Windows平台不要尝试这么做。Windows下，<code>select</code>仅对socket起作用。在C语言中也同样要注意，很多socket的高级功能在Windows上是以不同方式去实现的。事实上，在Windows平台我通常是用线程来处理socket的（效果非常，非常的好）。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+              <a href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag"># 翻译</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2017/02/15/Git%E4%B8%8EVS-Code%E7%AC%94%E8%AE%B0/" rel="next" title="Git与VS Code笔记">
+                  <i class="fa fa-chevron-left"></i> Git与VS Code笔记
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2019/08/07/decorator-unittest/" rel="prev" title="Python装饰器与单元测试">
+                  Python装饰器与单元测试 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#socket"><span class="nav-number">2.</span> <span class="nav-text">socket</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#历史"><span class="nav-number">3.</span> <span class="nav-text">历史</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建socket"><span class="nav-number">4.</span> <span class="nav-text">创建socket</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进程间通信（IPC）"><span class="nav-number">5.</span> <span class="nav-text">进程间通信（IPC）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用socket"><span class="nav-number">6.</span> <span class="nav-text">使用socket</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二进制数据"><span class="nav-number">7.</span> <span class="nav-text">二进制数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#断开连接"><span class="nav-number">8.</span> <span class="nav-text">断开连接</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#socket何时销毁"><span class="nav-number">9.</span> <span class="nav-text">socket何时销毁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#非阻塞式socket"><span class="nav-number">10.</span> <span class="nav-text">非阻塞式socket</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="Orenoid"
+    src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Orenoid</p>
+  <div class="site-description" itemprop="description">A lot to learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="http://steamcommunity.com/profiles/76561198162257296/" title="Steam &amp;rarr; http:&#x2F;&#x2F;steamcommunity.com&#x2F;profiles&#x2F;76561198162257296&#x2F;" rel="noopener" target="_blank"><i class="fa fa-fw fa-steam"></i>Steam</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/Orenoid" title="https:&#x2F;&#x2F;github.com&#x2F;Orenoid" rel="noopener" target="_blank">GitHub</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://weibo.com/5000490293/profile?is_all=1" title="http:&#x2F;&#x2F;weibo.com&#x2F;5000490293&#x2F;profile?is_all=1" rel="noopener" target="_blank">Weibo</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://myanimelist.net/profile/Orenoid" title="https:&#x2F;&#x2F;myanimelist.net&#x2F;profile&#x2F;Orenoid" rel="noopener" target="_blank">MAL</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Orenoid</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
